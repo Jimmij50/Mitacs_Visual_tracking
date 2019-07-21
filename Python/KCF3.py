@@ -92,7 +92,7 @@ def get_subwindow_list(img,template):
     subwindow_list=[]
     size_x=template.shape[1]
     size_y=template.shape[0]
-   
+    subwindow=np.zeros([size_y,size_x,3],dtype='uint8')
     for i in range(10,img.shape[1],20):# x
         for j in range(10,img.shape[0],20):#y
             left=i-size_x//2 if (i-size_x//2)>0 else 0
@@ -108,7 +108,7 @@ def get_subwindow_list(img,template):
             # print(size_x_img)
             # print(left,right)
             # print(top_t,left_t)
-            subwindow=np.zeros([size_y,size_x,3],dtype='uint8')
+            subwindow=subwindow*0
             subwindow[top_t:down_t,left_t:right_t]=img[top:down,left:right]
             for ii in range(top_t):
                 subwindow[ii,left_t:right_t]=img[top,left:right]
@@ -217,53 +217,14 @@ def detect(subwindow_list,win_patch,alphaf):
 
 
 
-
-def subwindow(img,template):
-    '''
-    img: video frame
-    '''
-    height=img.shape[0]
-    width=img.shape[1]
-    th=template.shape[0]
-    tw=template.shape[1]
-    subwindow=np.zeros([th,tw,3])
-    subwindow_list=[] 
-    for i in range(10,width-10,30):
-        for j in range(10,height-10,30):
-            leftside=i-tw//2 if (i-tw//2)>1 else 1
-            rightside=i-tw//2+tw-1 if (i-tw//2+tw-1)<(width-4) else width-4
-            upside=j-th//2 if (j-th//2)>1 else 1
-            downside=j-th//2+th-1 if (j-th//2+th-1)<(height-4) else height-4
-            new_h=downside-upside+1
-            new_w=rightside-leftside+1
-            subwindow[th//2-new_h//2:th//2-new_h//2+new_h,tw//2-new_w//2:tw//2-new_w//2+new_w]=\
-                img[upside:downside+1,leftside:rightside+1]
-            max_i=np.argmax(subwindow)
-            index=np.unravel_index(max_i,subwindow.shape)
-            max=subwindow[index]
-            subwindow=subwindow/max
-            subwindow_list.append((subwindow,POS(i,j)))# this is center
-            print(i,j)
-            
-    return subwindow_list
 def draw_rect(event,x,y,flags,param):
-    global ix1,iy1,ix2,iy2,drawing 
+    global ix1,iy1,ix2,iy2
     
-    if (event==cv2.EVENT_LBUTTONDOWN and drawing==0 ):
+    if (event==cv2.EVENT_LBUTTONDOWN ):
         ix1,iy1=x,y
-        drawing=1
-    if(flags==cv2.EVENT_FLAG_LBUTTON and drawing==1):
+    if(flags==cv2.EVENT_FLAG_LBUTTON ):
         ix2,iy2=x,y
-        #print(x,y)
-        # cv2.line(img,(ix1,iy1),(ix1,iy2),(255,0,0),1)
-        # cv2.line(img,(ix1,iy2),(ix2,iy2),(255,0,0),1)
-        # cv2.line(img,(ix2,iy2),(ix2,iy1),(255,0,0),1)
-        # cv2.line(img,(ix2,iy1),(ix1,iy1),(255,0,0),1)
-        
-        #cv2.rectangle(img,(ix1,iy1),(ix2,iy2),(0,255,0),-1)
-        cv2.rectangle(img,(ix1,iy1),(ix2,iy2),(0,255,0),1)
-    if(event==cv2.EVENT_LBUTTONUP):
-        drawing=0
+ 
 
 capture = cv2.VideoCapture(1)
 cv2.namedWindow('image') 
@@ -289,5 +250,5 @@ while(1):
         cv2.circle(img,(final.x,final.y),10,(0,0,213),-1)
         cv2.imshow('template',temp_pad)
     cv2.imshow('image',img)
-    cv2.waitKey(20)
+    cv2.waitKey(10)
 
